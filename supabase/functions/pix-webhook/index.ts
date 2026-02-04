@@ -102,24 +102,32 @@ Deno.serve(async (req) => {
           .update({ status: "paid", updated_at: now })
           .eq("id", order.id)
           .eq("status", "pending");
+      }
 
-        const totalUnitsRaw = order.metadata?.total_units;
+      // Recalculate inventory from paid orders to avoid race conditions
+      const { data: paidOrders } = await supabase
+        .from("orders")
+        .select("metadata")
+        .eq("status", "paid");
+
+      const soldUnits = (paidOrders || []).reduce((sum, row) => {
+        const totalUnitsRaw = row.metadata?.total_units;
         const totalUnits = totalUnitsRaw ? Number(totalUnitsRaw) : 0;
-        if (Number.isFinite(totalUnits) && totalUnits > 0) {
-          const { data: inventory } = await supabase
-            .from("inventory")
-            .select("remaining_units")
-            .eq("id", 1)
-            .single();
+        return Number.isFinite(totalUnits) ? sum + totalUnits : sum;
+      }, 0);
 
-          if (inventory) {
-            const newRemaining = Math.max(0, inventory.remaining_units - totalUnits);
-            await supabase
-              .from("inventory")
-              .update({ remaining_units: newRemaining, updated_at: now })
-              .eq("id", 1);
-          }
-        }
+      const { data: inventory } = await supabase
+        .from("inventory")
+        .select("total_units")
+        .eq("id", 1)
+        .single();
+
+      if (inventory) {
+        const newRemaining = Math.max(0, inventory.total_units - soldUnits);
+        await supabase
+          .from("inventory")
+          .update({ remaining_units: newRemaining, updated_at: now })
+          .eq("id", 1);
       }
 
       return new Response(
