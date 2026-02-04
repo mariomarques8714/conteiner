@@ -38,14 +38,14 @@ export function StockBanner() {
     remaining !== null && total !== null ? Math.max(0, total - remaining) : "--";
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white font-bold text-center py-2">
-      <div className="text-[10px] sm:text-xs uppercase tracking-[0.2em] opacity-80">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-red-600 text-white font-bold text-center py-1">
+      <div className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] opacity-80">
         Estoque disponível neste contêiner
       </div>
-      <div className="text-lg sm:text-xl uppercase">
+      <div className="text-base sm:text-lg uppercase">
         {remainingDisplay} camisas restantes
       </div>
-      <div className="text-[10px] sm:text-xs opacity-80">
+      <div className="text-[9px] sm:text-[10px] opacity-80">
         Reservadas: {reservedDisplay} de {totalDisplay}
       </div>
     </div>

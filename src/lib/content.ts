@@ -277,7 +277,7 @@ export const CONTENT = {
     remainingPaymentLabel: "Pagamento complementar",
     remainingPaymentExplanation: "O valor complementar será solicitado antes da distribuição do lote.",
     deliveryForecastLabel: "Previsão de chegada",
-    deliveryForecastValue: "Meio de abril de 2026",
+    deliveryForecastValue: "Maio de 2026",
     
     // WhatsApp Group Card
     whatsAppGroup: {
