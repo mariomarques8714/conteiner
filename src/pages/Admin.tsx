@@ -35,22 +35,29 @@ export default function Admin() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    const { data: ordersData } = await supabase
-      .from("orders")
-      .select("id, status, customer, pix_qrcode_id, created_at")
-      .order("created_at", { ascending: false })
-      .limit(200);
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/admin-orders`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": passwordInput,
+        },
+      }
+    );
 
-    const { data: pixData } = await supabase
-      .from("pix_transactions")
-      .select("pix_id, amount, status, created_at");
-
-    const pixById: Record<string, PixRow> = {};
-    for (const pix of pixData || []) {
-      pixById[pix.pix_id] = pix;
+    if (!response.ok) {
+      setIsLoading(false);
+      return;
     }
 
-    setOrders(ordersData || []);
+    const data = await response.json();
+    const pixById: Record<string, PixRow> = {};
+    for (const item of data.pix || []) {
+      pixById[item.pix_id] = item;
+    }
+
+    setOrders(data.orders || []);
     setPixMap(pixById);
     setIsLoading(false);
   };
@@ -91,8 +98,7 @@ export default function Admin() {
               <Button
                 className="w-full"
                 onClick={() => {
-                  const expected = import.meta.env.VITE_ADMIN_PASSWORD;
-                  if (passwordInput && passwordInput === expected) {
+                  if (passwordInput) {
                     setIsAuthenticated(true);
                   } else {
                     setPasswordInput("");
